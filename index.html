@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FinBuddy — Know Your Money</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:       #0d1117;
+  --paper:     #f5f0e8;
+  --cream:     #faf7f2;
+  --teal:      #0f766e;
+  --teal-lt:   #14b8a6;
+  --teal-dim:  rgba(15,118,110,0.12);
+  --blue:      #1d4ed8;
+  --gold:      #c9952b;
+  --red:       #dc2626;
+  --muted:     #6b7280;
+  --border:    #d6cfc0;
+  --border-dk: #2d333b;
+  --mono:      'DM Mono', monospace;
+  --serif:     'Playfair Display', serif;
+  --sans:      'Syne', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  overflow-x: hidden;
+}
+
+/* NOISE */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1000; opacity: 0.35;
+}
+
+/* ─── TYPE SCALE ─── */
+.t-hero {
+  font-family: var(--serif);
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.t-section {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.t-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.t-body {
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #3d3830;
+}
+.t-mono { font-family: var(--mono); font-size: 0.85rem; }
+
+/* ─── HERO ─── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  overflow: hidden;
+}
+.hero-left {
+  padding: 6rem 4rem 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2rem;
+  z-index: 2;
+}
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.hero-eyebrow .dot {
+  width: 8px; height: 8px;
+  background: var(--teal);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.4); }
+}
+.hero-headline { max-width: 700px; }
+.hero-headline em { font-style: italic; color: var(--teal); }
+.hero-sub {
+  max-width: 420px;
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: #4b443a;
+}
+.hero-cta-row {
+  display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+}
+.btn-primary {
+  background: var(--ink); color: var(--paper);
+  padding: 0.9rem 2rem;
+  font-family: var(--sans); font-weight: 700; font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  border: none; cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  text-decoration: none; display: inline-block;
+}
+.btn-primary:hover { background: var(--teal); transform: translateY(-2px); }
+.btn-ghost {
+  background: transparent; color: var(--ink);
+  padding: 0.9rem 2rem;
+  font-family: var(--sans); font-weight: 600; font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  border: 1.5px solid var(--border); cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  text-decoration: none; display: inline-block;
+}
+.btn-ghost:hover { border-color: var(--ink); }
+.hero-stats {
+  display: flex; gap: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.stat-num { font-family: var(--mono); font-size: 1.6rem; font-weight: 500; }
+.stat-label {
+  font-family: var(--mono); font-size: 0.68rem;
+  letter-spacing: 0.1em; color: var(--muted);
+  text-transform: uppercase; margin-top: 2px;
+}
+
+/* ─── HERO RIGHT: DASHBOARD MOCK ─── */
+.hero-right {
+  background: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem; position: relative; overflow: hidden;
+}
+.hero-right::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 30%, rgba(15,118,110,0.25) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(29,78,216,0.15) 0%, transparent 50%);
+}
+.mock-app {
+  width: 100%; max-width: 420px;
+  background: #161b22;
+  border-radius: 16px;
+  border: 1px solid var(--border-dk);
+  overflow: hidden; position: relative; z-index: 2;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+  animation: floatCard 4s ease-in-out infinite;
+}
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.mock-topbar {
+  background: #1c2128; padding: 1rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border-dk);
+}
+.mock-logo { font-family: var(--mono); font-size: 0.85rem; color: #58a6ff; font-weight: 500; }
+.mock-pill {
+  background: rgba(15,118,110,0.2); color: #4ade80;
+  font-family: var(--mono); font-size: 0.65rem;
+  padding: 0.25rem 0.6rem; border-radius: 20px; letter-spacing: 0.05em;
+}
+.mock-nav {
+  background: #0d1117;
+  border-bottom: 1px solid var(--border-dk);
+  display: flex; overflow: hidden;
+}
+.mock-nav-tab {
+  font-family: var(--mono); font-size: 0.55rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.55rem 0.75rem; color: #8b949e; cursor: default;
+  border-right: 1px solid var(--border-dk);
+  transition: background 0.2s, color 0.2s;
+}
+.mock-nav-tab.active { color: var(--teal-lt); background: rgba(15,118,110,0.12); }
+.mock-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.mock-metrics {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem;
+}
+.mock-metric {
+  background: #0d1117; border-radius: 8px; padding: 0.75rem;
+  border: 1px solid var(--border-dk);
+}
+.mock-metric-label {
+  font-family: var(--mono); font-size: 0.55rem; color: #8b949e;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.mock-metric-val { font-family: var(--mono); font-size: 0.95rem; font-weight: 500; margin-top: 4px; }
+.mock-metric-val.green { color: #4ade80; }
+.mock-metric-val.red   { color: #f87171; }
+.mock-metric-val.blue  { color: #60a5fa; }
+.mock-chart {
+  background: #0d1117; border: 1px solid var(--border-dk); border-radius: 8px;
+  padding: 0.75rem; height: 90px;
+  display: flex; align-items: flex-end; gap: 4px; overflow: hidden;
+}
+.mock-bar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  animation: growBar 2s ease-out forwards;
+}
+@keyframes growBar {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
+}
+.mock-chat {
+  background: #0d1117; border: 1px solid var(--border-dk); border-radius: 8px;
+  padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;
+}
+.mock-bubble {
+  font-family: var(--mono); font-size: 0.65rem; line-height: 1.5;
+  padding: 0.4rem 0.6rem; border-radius: 6px; max-width: 90%;
+}
+.mock-bubble.user { background: #21262d; color: #c9d1d9; align-self: flex-end; }
+.mock-bubble.ai   { background: rgba(15,118,110,0.25); color: #a5f3fc; align-self: flex-start; border: 1px solid rgba(15,118,110,0.3); }
+
+/* ─── MARQUEE ─── */
+.marquee-strip {
+  background: var(--ink); color: var(--paper);
+  padding: 0.9rem 0; overflow: hidden; white-space: nowrap;
+  border-top: 1px solid var(--border-dk);
+}
+.marquee-inner {
+  display: inline-flex; gap: 3rem;
+  animation: marquee 22s linear infinite;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-item {
+  font-family: var(--mono); font-size: 0.75rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  opacity: 0.6; display: flex; align-items: center; gap: 0.75rem;
+}
+.marquee-item::before { content: '◆'; color: var(--teal); font-size: 0.5rem; }
+
+/* ─── SECTION DEFAULTS ─── */
+section { padding: 7rem 0; }
+.container { max-width: 1140px; margin: 0 auto; padding: 0 3rem; }
+
+/* ─── PROBLEM ─── */
+.problem { background: var(--cream); position: relative; }
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+.problem-cards { display: flex; flex-direction: column; gap: 1rem; margin-top: 2.5rem; }
+.pain-card {
+  background: white; border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  padding: 1rem 1.25rem;
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.pain-card:hover { transform: translateX(4px); box-shadow: 4px 0 12px rgba(0,0,0,0.06); }
+.pain-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.pain-text { font-size: 0.9rem; line-height: 1.5; color: #4b443a; }
+.pain-text strong { color: var(--ink); }
+.problem-right { position: relative; }
+.receipt-stack { position: relative; height: 280px; }
+.receipt {
+  position: absolute; background: white; border: 1px solid var(--border);
+  padding: 1.25rem; width: 220px;
+  font-family: var(--mono); font-size: 0.72rem; line-height: 1.8;
+  box-shadow: 4px 4px 0 var(--border);
+}
+.receipt:nth-child(1) { top: 0;   left: 60px; transform: rotate(-4deg); z-index: 3; }
+.receipt:nth-child(2) { top: 30px; left: 30px; transform: rotate(2deg);  z-index: 2; opacity: 0.7; }
+.receipt:nth-child(3) { top: 60px; left: 0;    transform: rotate(-1deg); z-index: 1; opacity: 0.5; }
+.receipt-title {
+  font-weight: 500; border-bottom: 1px dashed var(--border);
+  padding-bottom: 0.4rem; margin-bottom: 0.4rem; color: var(--ink);
+}
+.receipt-row { display: flex; justify-content: space-between; }
+.receipt-row .amt { color: var(--red); }
+
+/* ─── HOW IT WORKS ─── */
+.how { background: var(--ink); color: var(--paper); }
+.how .t-label { color: var(--teal-lt); }
+.how .t-section { color: var(--paper); }
+.steps {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 2rem; margin-top: 4rem; position: relative;
+}
+.steps::before {
+  content: '';
+  position: absolute; top: 2.2rem; left: 4rem; right: 4rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+}
+.step { display: flex; flex-direction: column; gap: 1rem; position: relative; }
+.step-num {
+  width: 44px; height: 44px; background: var(--teal); color: white;
+  font-family: var(--mono); font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center; font-weight: 500;
+  position: relative; z-index: 1;
+}
+.step-title { font-family: var(--sans); font-weight: 700; font-size: 1rem; color: var(--paper); }
+.step-desc  { font-family: var(--sans); font-size: 0.88rem; color: #8b949e; line-height: 1.6; }
+
+/* ─── SMS IMPORT SECTION (NEW) ─── */
+.sms-section { background: var(--cream); }
+.sms-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 5rem; align-items: center; }
+.sms-mock {
+  background: white; border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.07);
+}
+.sms-mock-top {
+  background: var(--ink); padding: 0.85rem 1.25rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.sms-mock-title { font-family: var(--mono); font-size: 0.75rem; color: #c9d1d9; letter-spacing: 0.06em; }
+.sms-textarea-mock {
+  margin: 1.25rem; background: var(--cream); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.85rem;
+  font-family: var(--mono); font-size: 0.72rem; line-height: 1.7; color: #4b443a;
+  min-height: 100px;
+}
+.sms-parsed-rows { padding: 0 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.sms-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  align-items: center; gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--cream); border-radius: 6px;
+  border: 1px solid var(--border); font-family: var(--mono); font-size: 0.7rem;
+  animation: fadeUp 0.4s ease both;
+}
+.sms-row:nth-child(1) { animation-delay: 0.3s; }
+.sms-row:nth-child(2) { animation-delay: 0.6s; }
+.sms-row:nth-child(3) { animation-delay: 0.9s; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.sms-row-desc { color: var(--ink); font-weight: 500; }
+.sms-row-cat {
+  color: white; background: var(--teal);
+  padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.62rem;
+  text-align: center;
+}
+.sms-row-amt { color: var(--red); text-align: right; }
+.sms-import-btn {
+  margin: 0 1.25rem 1.25rem;
+  display: block; width: calc(100% - 2.5rem);
+  background: var(--ink); color: var(--paper);
+  border: none; border-radius: 6px;
+  padding: 0.7rem; font-family: var(--sans); font-weight: 700; font-size: 0.8rem;
+  cursor: pointer; letter-spacing: 0.05em;
+  text-align: center;
+}
+.sms-badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(201,149,43,0.15); color: var(--gold);
+  border: 1px solid rgba(201,149,43,0.3);
+  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 4px;
+  margin-top: 1rem; margin-bottom: 0.5rem;
+}
+.sms-badge::before { content: '★'; font-size: 0.55rem; }
+
+/* ─── FEATURES ─── */
+.features { background: var(--paper); }
+.features-header { text-align: center; margin-bottom: 5rem; }
+.features-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5px; background: var(--border);
+  border: 1.5px solid var(--border);
+}
+.feature-cell {
+  background: var(--cream); padding: 2.5rem 2rem;
+  transition: background 0.2s; position: relative; overflow: hidden;
+}
+.feature-cell:hover { background: white; }
+.feature-cell::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  height: 2px; width: 0; background: var(--teal); transition: width 0.3s;
+}
+.feature-cell:hover::after { width: 100%; }
+.feature-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+.feature-name { font-family: var(--sans); font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; color: var(--ink); }
+.feature-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+.feature-tag {
+  display: inline-block; margin-top: 0.75rem;
+  font-family: var(--mono); font-size: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  background: rgba(15,118,110,0.1); color: var(--teal);
+  padding: 0.2rem 0.5rem; border-radius: 3px;
+}
+.feature-new-badge {
+  position: absolute; top: 1rem; right: 1rem;
+  background: var(--gold); color: white;
+  font-family: var(--mono); font-size: 0.55rem;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 0.2rem 0.45rem; border-radius: 3px;
+}
+
+/* ─── WHY FINBUDDY ─── */
+.arch { background: var(--ink); color: var(--paper); }
+.arch-header { margin-bottom: 4rem; }
+.arch-diagram {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+  align-items: stretch; background: #161b22;
+  border: 1px solid var(--border-dk); border-radius: 12px; overflow: hidden;
+}
+.arch-layer {
+  padding: 2.5rem 2rem; border-right: 1px solid var(--border-dk);
+  display: flex; flex-direction: column; gap: 0.75rem;
+  transition: background 0.2s; cursor: default;
+}
+.arch-layer:last-child { border-right: none; }
+.arch-layer:hover { background: #1c2128; }
+.arch-layer-name {
+  font-family: var(--mono); font-size: 0.65rem;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--teal-lt);
+  border-bottom: 1px solid var(--border-dk); padding-bottom: 0.6rem; margin-bottom: 0.25rem;
+}
+.arch-detail {
+  font-size: 0.7rem; color: #8b949e; font-family: var(--mono);
+  margin-top: 0.25rem; line-height: 1.5;
+}
+
+/* ─── DEMO CHAT ─── */
+.demo { background: var(--cream); }
+.demo-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 5rem; align-items: center; }
+.chat-window {
+  background: white; border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+.chat-topbar {
+  background: var(--ink); padding: 0.85rem 1.25rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.chat-topbar-dot {
+  width: 10px; height: 10px; background: var(--teal);
+  border-radius: 50%; animation: pulse 2s infinite;
+}
+.chat-topbar-title { font-family: var(--mono); font-size: 0.75rem; color: #c9d1d9; letter-spacing: 0.06em; }
+.chat-messages {
+  padding: 1.5rem; display: flex; flex-direction: column;
+  gap: 1rem; min-height: 280px;
+}
+.chat-msg {
+  max-width: 85%; padding: 0.75rem 1rem; border-radius: 10px;
+  font-size: 0.82rem; line-height: 1.6; font-family: var(--sans);
+  opacity: 0; animation: fadeUp 0.4s ease forwards;
+}
+.chat-msg.user {
+  background: var(--ink); color: var(--paper);
+  align-self: flex-end; border-bottom-right-radius: 2px;
+}
+.chat-msg.ai {
+  background: #f0fdf4; color: #166534;
+  border: 1px solid #bbf7d0;
+  align-self: flex-start; border-bottom-left-radius: 2px;
+}
+.chat-msg:nth-child(1) { animation-delay: 0.3s; }
+.chat-msg:nth-child(2) { animation-delay: 1.0s; }
+.chat-msg:nth-child(3) { animation-delay: 2.2s; }
+.chat-msg:nth-child(4) { animation-delay: 3.8s; }
+.chat-input-row { padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }
+.chat-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.6rem 0.8rem; font-family: var(--mono); font-size: 0.78rem;
+  color: var(--muted); background: var(--cream); outline: none; pointer-events: none;
+}
+.chat-send { background: var(--teal); color: white; border: none; border-radius: 6px; padding: 0.6rem 1rem; font-size: 0.75rem; cursor: pointer; }
+
+/* ─── INSIGHTS SECTION (NEW) ─── */
+.insights-section { background: var(--ink); color: var(--paper); }
+.insights-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 5rem; align-items: center; }
+.insight-charts {
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.insight-bar-row {
+  display: flex; flex-direction: column; gap: 0.3rem;
+}
+.insight-bar-label {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 0.7rem; color: #c9d1d9;
+}
+.insight-bar-label .pct { color: var(--teal-lt); }
+.insight-bar-track {
+  height: 8px; background: #2d333b; border-radius: 4px; overflow: hidden;
+}
+.insight-bar-fill {
+  height: 100%; border-radius: 4px;
+  animation: expandBar 1.5s ease-out both;
+}
+@keyframes expandBar {
+  from { width: 0 !important; }
+  to   { /* width set inline */ }
+}
+.insight-bar-row:nth-child(1) .insight-bar-fill { animation-delay: 0.1s; background: var(--teal); }
+.insight-bar-row:nth-child(2) .insight-bar-fill { animation-delay: 0.25s; background: var(--blue); }
+.insight-bar-row:nth-child(3) .insight-bar-fill { animation-delay: 0.4s; background: var(--gold); }
+.insight-bar-row:nth-child(4) .insight-bar-fill { animation-delay: 0.55s; background: #a855f7; }
+.insight-bar-row:nth-child(5) .insight-bar-fill { animation-delay: 0.7s; background: #ec4899; }
+.insight-summary {
+  margin-top: 0.75rem; background: #161b22; border: 1px solid var(--border-dk);
+  border-radius: 8px; padding: 1rem;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+}
+.insight-stat-item {}
+.insight-stat-val { font-family: var(--mono); font-size: 1.1rem; font-weight: 500; color: #e6edf3; }
+.insight-stat-label { font-family: var(--mono); font-size: 0.6rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.insight-stat-val.positive { color: #4ade80; }
+
+/* ─── TECH STACK ─── */
+.stack { background: var(--paper); }
+.stack-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 3.5rem; }
+.stack-card {
+  border: 1px solid var(--border); padding: 1.5rem; background: white;
+  transition: box-shadow 0.2s, transform 0.2s; position: relative;
+}
+.stack-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); transform: translateY(-3px); }
+.stack-card-num { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+.stack-card-name { font-family: var(--sans); font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 0.35rem; }
+.stack-card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+.stack-card-badge {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 8px; height: 8px; background: var(--teal); border-radius: 50%;
+}
+
+/* ─── CTA ─── */
+.cta-section {
+  background: var(--ink); text-align: center; padding: 8rem 2rem;
+  position: relative; overflow: hidden;
+}
+.cta-section::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(15,118,110,0.2) 0%, transparent 65%);
+}
+.cta-section .t-section { color: var(--paper); margin-bottom: 1.5rem; position: relative; z-index: 1; }
+.cta-section .t-body { color: #8b949e; max-width: 480px; margin: 0 auto 2.5rem; position: relative; z-index: 1; }
+.cta-section .btn-primary { font-size: 1rem; padding: 1.1rem 2.5rem; position: relative; z-index: 1; }
+.cta-section .btn-primary:hover { background: var(--teal); }
+
+/* ─── FOOTER ─── */
+.footer {
+  background: #080c10; padding: 2rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+  color: #4d5566; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.05em;
+}
+.footer a { color: var(--teal); text-decoration: none; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { min-height: 50vh; }
+  .problem-grid, .demo-grid, .sms-grid, .insights-grid { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .arch-diagram { grid-template-columns: 1fr 1fr; }
+  .stack-grid { grid-template-columns: 1fr 1fr; }
+  .container { padding: 0 1.5rem; }
+  .hero-left { padding: 4rem 1.5rem 3rem; }
+  .footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <div class="dot"></div>
+      <span class="t-label">Personal Finance · AI-Powered · Open Source</span>
+    </div>
+    <h1 class="t-hero hero-headline">
+      Know your<br /><em>money.</em><br />Finally.
+    </h1>
+    <p class="hero-sub">
+      FinBuddy tracks your spending, sorts it automatically, keeps you on budget, and answers your money questions in plain English — using AI that actually knows your numbers.
+    </p>
+    <div class="hero-cta-row">
+      <a href="#features" class="btn-primary">See what it does</a>
+      <a href="#how-it-works" class="btn-ghost">How it works</a>
+      <a href="https://github.com/atm00n/FinBuddy" target="_blank" rel="noopener noreferrer" class="btn-ghost" style="display:inline-flex;align-items:center;gap:0.5rem;">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Private — stays on your device</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Subscriptions or sign-ups</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Questions you can ask the AI</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">instant</div>
+        <div class="stat-label">SMS & CSV import</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="mock-app">
+      <div class="mock-topbar">
+        <span class="mock-logo">FinBuddy v1.0</span>
+        <span class="mock-pill">● Live</span>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav-tab active">Dashboard</div>
+        <div class="mock-nav-tab">Transactions</div>
+        <div class="mock-nav-tab">Insights</div>
+        <div class="mock-nav-tab">AI Chat</div>
+        <div class="mock-nav-tab">Import</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-metrics">
+          <div class="mock-metric">
+            <div class="mock-metric-label">Income</div>
+            <div class="mock-metric-val green">₹50,000</div>
+          </div>
+          <div class="mock-metric">
+            <div class="mock-metric-label">Expenses</div>
+            <div class="mock-metric-val red">₹3,800</div>
+          </div>
+          <div class="mock-metric">
+            <div class="mock-metric-label">Balance</div>
+            <div class="mock-metric-val blue">₹46,200</div>
+          </div>
+        </div>
+        <div class="mock-chart">
+          <div class="mock-bar" style="height:30%;background:#0f766e;animation-delay:0.1s"></div>
+          <div class="mock-bar" style="height:55%;background:#0f766e;animation-delay:0.2s"></div>
+          <div class="mock-bar" style="height:40%;background:#0f766e;animation-delay:0.3s"></div>
+          <div class="mock-bar" style="height:75%;background:#0f766e;animation-delay:0.4s"></div>
+          <div class="mock-bar" style="height:50%;background:#0f766e;animation-delay:0.5s"></div>
+          <div class="mock-bar" style="height:85%;background:#1d4ed8;animation-delay:0.6s"></div>
+          <div class="mock-bar" style="height:45%;background:#1d4ed8;animation-delay:0.7s"></div>
+          <div class="mock-bar" style="height:60%;background:#f59e0b;animation-delay:0.8s"></div>
+        </div>
+        <div class="mock-chat">
+          <div class="mock-bubble user">Where am I overspending this month?</div>
+          <div class="mock-bubble ai">Food is 78.9% of your expenses (₹3,000). Consider a ₹2,500 cap. Transport looks healthy at ₹800.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MARQUEE ─── -->
+<div class="marquee-strip">
+  <div class="marquee-inner">
+    <span class="marquee-item">Automatic categorization</span>
+    <span class="marquee-item">Smart budget alerts</span>
+    <span class="marquee-item">AI money assistant</span>
+    <span class="marquee-item">Import bank statements</span>
+    <span class="marquee-item">Paste UPI SMS directly</span>
+    <span class="marquee-item">Monthly spending trends</span>
+    <span class="marquee-item">Savings rate tracker</span>
+    <span class="marquee-item">Works without internet</span>
+    <span class="marquee-item">Your data, your device</span>
+    <!-- duplicate for seamless loop -->
+    <span class="marquee-item">Automatic categorization</span>
+    <span class="marquee-item">Smart budget alerts</span>
+    <span class="marquee-item">AI money assistant</span>
+    <span class="marquee-item">Import bank statements</span>
+    <span class="marquee-item">Paste UPI SMS directly</span>
+    <span class="marquee-item">Monthly spending trends</span>
+    <span class="marquee-item">Savings rate tracker</span>
+    <span class="marquee-item">Works without internet</span>
+    <span class="marquee-item">Your data, your device</span>
+  </div>
+</div>
+
+<!-- ─── PROBLEM ─── -->
+<section class="problem">
+  <div class="container">
+    <div class="problem-grid">
+      <div class="problem-left">
+        <p class="t-label">The Problem</p>
+        <h2 class="t-section" style="margin-top:1rem">Most people have no idea where their money goes</h2>
+        <div class="problem-cards">
+          <div class="pain-card">
+            <div class="pain-icon">🧾</div>
+            <div class="pain-text"><strong>Scattered receipts.</strong> Expenses live in five apps, bank statements, and mental notes that evaporate by month-end.</div>
+          </div>
+          <div class="pain-card">
+            <div class="pain-icon">📊</div>
+            <div class="pain-text"><strong>No clear picture.</strong> You know something is off, but which category is bleeding you dry? The data is there — the insight isn't.</div>
+          </div>
+          <div class="pain-card">
+            <div class="pain-icon">🤖</div>
+            <div class="pain-text"><strong>Generic advice.</strong> Finance apps tell you to "spend less on dining" without knowing you spent ₹12,000 on Swiggy last week.</div>
+          </div>
+          <div class="pain-card">
+            <div class="pain-icon">☁️</div>
+            <div class="pain-text"><strong>Cloud lock-in.</strong> Your most sensitive data sitting on someone else's servers, with a subscription fee attached.</div>
+          </div>
+        </div>
+      </div>
+      <div class="problem-right">
+        <div class="receipt-stack">
+          <div class="receipt">
+            <div class="receipt-title">April Statement</div>
+            <div class="receipt-row"><span>Swiggy ×8</span><span class="amt">-₹3,200</span></div>
+            <div class="receipt-row"><span>Uber ×12</span><span class="amt">-₹2,400</span></div>
+            <div class="receipt-row"><span>Netflix</span><span class="amt">-₹649</span></div>
+            <div class="receipt-row"><span>Zepto ×3</span><span class="amt">-₹1,100</span></div>
+            <div class="receipt-row"><span>???</span><span class="amt">-₹4,800</span></div>
+          </div>
+          <div class="receipt">
+            <div class="receipt-title">Bank SMS</div>
+            <div class="receipt-row"><span>IRCTC</span><span class="amt">-₹3,600</span></div>
+            <div class="receipt-row"><span>Dominos</span><span class="amt">-₹580</span></div>
+            <div class="receipt-row"><span>Amazon</span><span class="amt">-₹2,199</span></div>
+          </div>
+          <div class="receipt">
+            <div class="receipt-title">UPI History</div>
+            <div class="receipt-row"><span>Rapido</span><span class="amt">-₹240</span></div>
+            <div class="receipt-row"><span>Pharmacy</span><span class="amt">-₹870</span></div>
+            <div class="receipt-row"><span>Misc</span><span class="amt">-₹???</span></div>
+          </div>
+        </div>
+        <p class="t-body" style="margin-top:2rem;font-size:0.9rem;color:var(--muted);">FinBuddy unifies everything — and explains it in plain language.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section class="how" id="how-it-works">
+  <div class="container">
+    <p class="t-label">How It Works</p>
+    <h2 class="t-section" style="margin-top:1rem;max-width:600px">Four steps from raw data to real insight</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Log or Import</div>
+        <div class="step-desc">Type a transaction, paste UPI/bank SMS, or upload a CSV/PDF. FinBuddy reads it and categorises everything instantly — no manual work needed.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Stays on Your Device</div>
+        <div class="step-desc">Everything is saved right on your computer. No account, no cloud, no one else can see your data. It's just yours.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">See the Picture</div>
+        <div class="step-desc">FinBuddy breaks down your spending by category, tracks budgets, and shows you whether this month looks better or worse than the last.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Ask the AI</div>
+        <div class="step-desc">Type a question like "where am I overspending?" and the AI answers based on your actual numbers — not generic advice. Works offline too.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SMS IMPORT (NEW) ─── -->
+<section class="sms-section" id="sms-import">
+  <div class="container">
+    <div class="sms-grid">
+      <div>
+        <p class="t-label">New · SMS Import</p>
+        <span class="sms-badge">Just Added</span>
+        <h2 class="t-section" style="margin-top:0.5rem">Your bank SMS is already a spreadsheet. You just can't read it yet.</h2>
+        <p class="t-body" style="margin-top:1.5rem">
+          Every UPI alert and bank debit notification already contains exactly what you need — merchant, amount, date. FinBuddy reads the raw SMS text, extracts each transaction, assigns a category, and queues it for your review.
+        </p>
+        <p class="t-body" style="margin-top:1rem">
+          Copy a week of messages from your SMS app, paste them in one go, and hit import. Dozens of transactions logged in under 30 seconds — no bank login, no data sharing, nothing leaving your device.
+        </p>
+        <ul style="margin-top:1.5rem;display:flex;flex-direction:column;gap:0.6rem;list-style:none;">
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-family:var(--sans);font-size:0.9rem;color:#4b443a;">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0;">✓</span>
+            Recognises HDFC, SBI, Kotak, Axis, ICICI, Paytm &amp; more
+          </li>
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-family:var(--sans);font-size:0.9rem;color:#4b443a;">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0;">✓</span>
+            Handles ₹, Rs, INR and mixed formats automatically
+          </li>
+          <li style="display:flex;gap:0.75rem;align-items:flex-start;font-family:var(--sans);font-size:0.9rem;color:#4b443a;">
+            <span style="color:var(--teal);font-weight:700;flex-shrink:0;">✓</span>
+            Review &amp; edit before anything is saved — you stay in control
+          </li>
+        </ul>
+      </div>
+      <div class="sms-mock">
+        <div class="sms-mock-top">
+          <div class="chat-topbar-dot" style="width:8px;height:8px;background:var(--gold);border-radius:50%;"></div>
+          <span class="sms-mock-title">Import from UPI / Bank SMS</span>
+        </div>
+        <div class="sms-textarea-mock">
+          Your a/c XX4821 debited Rs 320 for Swiggy on 12-May.<br />
+          UPI: Rs 800 sent to rapido@upi on 11-May-25.<br />
+          Acct XX4821 debited INR 649.00 by NETFLIX on 10-May.
+        </div>
+        <div style="padding:0 1.25rem;font-family:var(--mono);font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:0.5rem;">3 transactions recognised ↓</div>
+        <div class="sms-parsed-rows">
+          <div class="sms-row">
+            <span class="sms-row-desc">Swiggy</span>
+            <span class="sms-row-cat">Food</span>
+            <span class="sms-row-amt">-₹320</span>
+          </div>
+          <div class="sms-row">
+            <span class="sms-row-desc">Rapido</span>
+            <span class="sms-row-cat">Transport</span>
+            <span class="sms-row-amt">-₹800</span>
+          </div>
+          <div class="sms-row">
+            <span class="sms-row-desc">Netflix</span>
+            <span class="sms-row-cat">Entertainment</span>
+            <span class="sms-row-amt">-₹649</span>
+          </div>
+        </div>
+        <div class="sms-import-btn">Import 3 transactions →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ─── -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header">
+      <p class="t-label">Features</p>
+      <h2 class="t-section" style="margin-top:1rem">Everything you need. Nothing you don't.</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-cell">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-name">Instant Auto-Categorization</div>
+        <div class="feature-desc">Type "Swiggy ₹320" and FinBuddy instantly labels it Food — before you even hit save. The more you use it, the smarter it gets at reading your habits.</div>
+        <span class="feature-tag">No manual sorting ever</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">💬</div>
+        <div class="feature-name">AI That Knows Your Numbers</div>
+        <div class="feature-desc">Ask anything — "where did my money go this month?" or "can I afford this?" — and get answers grounded in your real spending, not generic finance tips.</div>
+        <span class="feature-tag">Powered by Gemini AI</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">📈</div>
+        <div class="feature-name">Visual Spending Breakdown</div>
+        <div class="feature-desc">See your spending by category, compare income vs. expenses over time, and spot which months were out of control at a glance — with clean, interactive charts.</div>
+        <span class="feature-tag">Charts & trends</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">📱</div>
+        <div class="feature-name">Paste UPI / Bank SMS</div>
+        <div class="feature-desc">Copy a week of bank alerts and paste them directly. FinBuddy parses every transaction, guesses the category, and lets you review before saving. No manual entry needed.</div>
+        <span class="feature-tag">SMS parser</span>
+        <div class="feature-new-badge">New</div>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-name">Budget Tracking</div>
+        <div class="feature-desc">Set a monthly limit for Food, Transport, or any category. FinBuddy watches your spending in real time and alerts you before you go over.</div>
+        <span class="feature-tag">Live progress bars</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">📁</div>
+        <div class="feature-name">Import Your Bank Statement</div>
+        <div class="feature-desc">Upload a CSV or PDF from your bank and FinBuddy reads it, categorizes each transaction, and adds everything to your tracker automatically.</div>
+        <span class="feature-tag">CSV & PDF supported</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-name">Works Without Internet</div>
+        <div class="feature-desc">No Wi-Fi? No problem. FinBuddy still tracks, categorizes, and gives you smart advice based on your data — all without needing a connection.</div>
+        <span class="feature-tag">Always available</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-name">Filter by Any Time Period</div>
+        <div class="feature-desc">Switch between this month, last 30 days, or a custom date range. Every chart and AI answer updates instantly to match the window you're looking at.</div>
+        <span class="feature-tag">Flexible date filters</span>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">💾</div>
+        <div class="feature-name">Nothing in the Cloud</div>
+        <div class="feature-desc">Your financial data never leaves your computer. No account required, no subscription, no company storing your transactions. It's yours, full stop.</div>
+        <span class="feature-tag">100% private</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INSIGHTS SECTION (NEW) ─── -->
+<section class="insights-section" id="insights">
+  <div class="container">
+    <div class="insights-grid">
+      <div class="insight-charts">
+        <p class="t-label" style="color:var(--teal-lt);margin-bottom:1.5rem">Live Insights — May 2025</p>
+        <div class="insight-bar-row">
+          <div class="insight-bar-label"><span>Food &amp; Dining</span><span class="pct">₹3,000 · 42%</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:42%"></div></div>
+        </div>
+        <div class="insight-bar-row">
+          <div class="insight-bar-label"><span>Transport</span><span class="pct">₹1,800 · 25%</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:25%"></div></div>
+        </div>
+        <div class="insight-bar-row">
+          <div class="insight-bar-label"><span>Shopping</span><span class="pct">₹1,200 · 17%</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:17%"></div></div>
+        </div>
+        <div class="insight-bar-row">
+          <div class="insight-bar-label"><span>Entertainment</span><span class="pct">₹649 · 9%</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:9%"></div></div>
+        </div>
+        <div class="insight-bar-row">
+          <div class="insight-bar-label"><span>Other</span><span class="pct">₹500 · 7%</span></div>
+          <div class="insight-bar-track"><div class="insight-bar-fill" style="width:7%"></div></div>
+        </div>
+        <div class="insight-summary">
+          <div class="insight-stat-item">
+            <div class="insight-stat-val positive">92.4%</div>
+            <div class="insight-stat-label">Savings rate</div>
+          </div>
+          <div class="insight-stat-item">
+            <div class="insight-stat-val">₹7,149</div>
+            <div class="insight-stat-label">Total spent</div>
+          </div>
+          <div class="insight-stat-item">
+            <div class="insight-stat-val positive">+₹8,651</div>
+            <div class="insight-stat-label">vs. last month</div>
+          </div>
+          <div class="insight-stat-item">
+            <div class="insight-stat-val">Food</div>
+            <div class="insight-stat-label">Top category</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="t-label" style="color:var(--teal-lt)">Insights</p>
+        <h2 class="t-section" style="color:var(--paper);margin-top:1rem;max-width:520px">Spot patterns before they become problems.</h2>
+        <p class="t-body" style="color:#8b949e;margin-top:1.5rem">
+          The Insights tab shows you your spending distribution across every category — visually, instantly. No raw numbers to decode. See at a glance whether Food is eating your budget, whether Transport spiked this month, and whether your savings rate is actually moving.
+        </p>
+        <p class="t-body" style="color:#8b949e;margin-top:1rem">
+          Switch date ranges and every chart updates live. Compare this month to the last without digging through transactions — just look at the bars and know.
+        </p>
+        <div style="margin-top:2rem;display:flex;gap:1.5rem;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:var(--mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal-lt);margin-bottom:0.3rem">Includes</div>
+            <div style="font-family:var(--mono);font-size:0.78rem;color:#c9d1d9;line-height:1.8;">
+              Category breakdown<br/>
+              Income vs. expenses<br/>
+              Month-over-month trend<br/>
+              Budget progress bars<br/>
+              Savings rate tracker
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHY FINBUDDY ─── -->
+<section class="arch" id="why-finbuddy">
+  <div class="container">
+    <div class="arch-header">
+      <p class="t-label" style="color:var(--teal-lt)">Why FinBuddy</p>
+      <h2 class="t-section" style="color:var(--paper);margin-top:1rem;max-width:640px">Built around one idea: your money is nobody else's business.</h2>
+      <p class="t-body" style="color:#8b949e;margin-top:1rem;max-width:560px">
+        Most finance apps make money by storing your data, selling you a subscription, or showing you ads. FinBuddy runs on your computer, saves everything locally, and costs nothing. There's no account to create. No server that gets breached. No company reading your statements.
+      </p>
+    </div>
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-layer-name">For the skeptic</div>
+        <div style="font-size:2rem;margin:0.75rem 0;">🔐</div>
+        <div style="color:#e6edf3;font-family:var(--sans);font-weight:700;font-size:1rem;margin-bottom:0.5rem;">Your data never leaves</div>
+        <div class="arch-detail" style="font-family:var(--sans);font-size:0.85rem;line-height:1.6;">Everything is stored as a file on your own computer. Close the app, and it's just a file sitting there — no sync, no upload, no third party.</div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-name">For the overwhelmed</div>
+        <div style="font-size:2rem;margin:0.75rem 0;">⚡</div>
+        <div style="color:#e6edf3;font-family:var(--sans);font-weight:700;font-size:1rem;margin-bottom:0.5rem;">No setup, no learning curve</div>
+        <div class="arch-detail" style="font-family:var(--sans);font-size:0.85rem;line-height:1.6;">Add a transaction, see where your money went. That's it. No financial jargon, no onboarding flow, no tutorial you have to sit through.</div>
+      </div>
+      <div class="arch-layer">
+        <div class="arch-layer-name">For the curious</div>
+        <div style="font-size:2rem;margin:0.75rem 0;">💡</div>
+        <div style="color:#e6edf3;font-family:var(--sans);font-weight:700;font-size:1rem;margin-bottom:0.5rem;">AI that actually helps</div>
+        <div class="arch-detail" style="font-family:var(--sans);font-size:0.85rem;line-height:1.6;">The AI reads your real spending before it answers. Ask "am I saving enough?" and it looks at your actual numbers — not some average person's budget.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DEMO CHAT ─── -->
+<section class="demo">
+  <div class="container">
+    <div class="demo-grid">
+      <div>
+        <p class="t-label">AI Assistant</p>
+        <h2 class="t-section" style="margin-top:1rem">Your data is the context. Every time.</h2>
+        <p class="t-body" style="margin-top:1.5rem">
+          FinBuddy doesn't just bolt an AI onto a chat box. Before it answers any question, it looks at what you actually spent this month — your category totals, your budget limits, your recent transactions — and uses that as the starting point. So when you ask "where is my money going?", the answer is about <em>your</em> money, not a textbook example.
+        </p>
+        <p class="t-body" style="margin-top:1rem">
+          No internet? FinBuddy still answers. It falls back to a local AI, and if that's unavailable, it does the maths itself from your spending history and gives you a straight answer — never a "sorry, I can't help right now."
+        </p>
+      </div>
+      <div class="chat-window">
+        <div class="chat-topbar">
+          <div class="chat-topbar-dot"></div>
+          <span class="chat-topbar-title">FinBuddy AI Assistant — This month</span>
+        </div>
+        <div class="chat-messages">
+          <div class="chat-msg user">Where am I overspending?</div>
+          <div class="chat-msg ai">Food is your top category at ₹3,000 — 78.9% of all expenses. No budget is set, so consider capping it at ₹2,500 to start. Transport (₹800) looks proportional to income.</div>
+          <div class="chat-msg user">What should I do first to save more?</div>
+          <div class="chat-msg ai">Your savings rate is 92.4% — already excellent. The fastest lever is reducing Swiggy/Zomato orders. Even cutting 3 orders/week saves ~₹700/month without lifestyle disruption.</div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" value="How do my budgets look right now?" readonly />
+          <button class="chat-send">→</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STACK ─── -->
+<section class="stack">
+  <div class="container">
+    <p class="t-label">Under the hood</p>
+    <h2 class="t-section" style="margin-top:1rem">Serious tools. Zero complexity for you.</h2>
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="stack-card-badge"></div>
+        <div class="stack-card-num">Interface</div>
+        <div class="stack-card-name">Clean & Fast</div>
+        <div class="stack-card-desc">A crisp Streamlit dashboard that updates the moment you make a change — no page reloads, no waiting, no lag. Five clear tabs: Transactions, Dashboard, Insights, AI, Import.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-badge"></div>
+        <div class="stack-card-num">Smart Sorting</div>
+        <div class="stack-card-name">Auto-Categorization</div>
+        <div class="stack-card-desc">A trained scikit-learn classifier reads the name of your transaction and assigns a category in milliseconds — no rules to configure manually.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-badge"></div>
+        <div class="stack-card-num">Charts</div>
+        <div class="stack-card-name">Plotly Visuals</div>
+        <div class="stack-card-desc">Hover over any bar or slice to see the exact number. Filter by date and every chart responds instantly.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-card-badge"></div>
+        <div class="stack-card-num">AI</div>
+        <div class="stack-card-name">Gemini + Local Fallback</div>
+        <div class="stack-card-desc">Answers your money questions with full knowledge of your spending. Falls back gracefully when you're offline — you always get a useful response.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GITHUB SECTION ─── -->
+<!-- ─── CTA ─── -->
+<section class="cta-section">
+  <p class="t-label" style="color:var(--teal-lt);margin-bottom:1rem;display:block">Get started</p>
+  <h2 class="t-section">Open it. Start tracking. That's it.</h2>
+  <p class="t-body">
+    No account, no sign-up, no subscription. Download FinBuddy, open it, and you're tracking your money in under a minute. Your data stays on your computer — always.
+  </p>
+  <br />
+  <a href="https://github.com/atm00n/FinBuddy" target="_blank" rel="noopener noreferrer" class="btn-primary">Get it on GitHub ↗</a>
+</section>
+
+<footer class="footer">
+  <span>FinBuddy · Personal Finance Tracker</span>
+  <span>Built with Streamlit · scikit-learn · Plotly · Gemini</span>
+  <span>Data stays local. Always.</span>
+</footer>
+
+</body>
+</html>
